@@ -2,4 +2,9 @@ name: EERestriction
 main: ger.pandemoneus.eeRestriction.EeRestriction
 version: '1.00'
 author: 'Pandemoneus'
-depend: [WorldGuard]
+depend: [WorldGuard, Vault]
+
+permissions:
+  eerestriction.restrict:
+    description: Restricts right-click usage of configured items in WG regions.
+    default: no op

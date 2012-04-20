@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import net.milkbowl.vault.permission.Permission;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -16,6 +18,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
@@ -27,6 +30,7 @@ import com.sk89q.worldguard.bukkit.WorldGuardPlugin;
  */
 public class EeRestriction extends JavaPlugin implements Listener {
 	private WorldGuardPlugin worldGuard;
+	private static Permission permission = null;
 	private Logger logger;
 	
 	private static final String ITEM = "[1-9][0-9]*(;[0-9]+)?"; // this format: 344 or 344;5
@@ -44,6 +48,7 @@ public class EeRestriction extends JavaPlugin implements Listener {
 		getServer().getPluginManager().registerEvents(this, this);
 		
 		setupConfig();
+		setupPermissions();
 	}
 	
 	public void onDisable() {
@@ -54,6 +59,10 @@ public class EeRestriction extends JavaPlugin implements Listener {
 	public void onEeToolUse(PlayerInteractEvent event) {
 		if (worldGuard == null)
 			return;
+		
+		if (!permission.playerHas(event.getPlayer(), Permissions.RESTRICT_USAGE.path())) {
+			return;
+		}
 		
 		if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
 			final Location blockLocation = event.getClickedBlock().getLocation();
@@ -122,6 +131,15 @@ public class EeRestriction extends JavaPlugin implements Listener {
 			}
 		}
 	}
+
+    private boolean setupPermissions()
+    {
+        RegisteredServiceProvider<Permission> permissionProvider = getServer().getServicesManager().getRegistration(net.milkbowl.vault.permission.Permission.class);
+        if (permissionProvider != null) {
+            permission = permissionProvider.getProvider();
+        }
+        return (permission != null);
+    }
 	
 	private WorldGuardPlugin getWorldGuard() {
 	    Plugin plugin = getServer().getPluginManager().getPlugin("WorldGuard");
@@ -131,5 +149,20 @@ public class EeRestriction extends JavaPlugin implements Listener {
 	    }
 	 
 	    return (WorldGuardPlugin) plugin;
+	}
+	
+
+	private enum Permissions {
+		RESTRICT_USAGE("eerestriction.restrict");
+		
+		private final String permission;
+		
+		private Permissions(final String permission) {
+			this.permission = permission;
+		}
+		
+		public String path() {
+			return permission;
+		}
 	}
 }
