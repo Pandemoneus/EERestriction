@@ -7,4 +7,3 @@ depend: [WorldGuard, Vault]
 permissions:
   eerestriction.restrict:
     description: Restricts right-click usage of configured items in WG regions.
-    default: no op
